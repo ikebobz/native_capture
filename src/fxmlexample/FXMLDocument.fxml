@@ -14,14 +14,32 @@
     <padding>
         <Insets top = "25" right = "25" bottom = "10" left = "25" />
     </padding>
-    <Text text = "Interactive Upload" GridPane.columnSpan = "2" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "0" style="-fx-font-weight: bold"/>
-      <Label text = "Tracking No." 
+     <Label text = "Set Batch Size" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "0"/>
+      <TextField fx:id = "txt_btchsize" 
+GridPane.columnIndex = "1" GridPane.rowIndex = "0" maxWidth = "65" text = "10" />
+      <Label text = "Set Record Count" 
 GridPane.columnIndex = "0" GridPane.rowIndex = "1"/>
+      <TextField fx:id = "txt_recCount" 
+GridPane.columnIndex = "1" GridPane.rowIndex = "1" maxWidth = "65"/>
+    <Text text = "Interactive Upload" GridPane.columnSpan = "2" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "3" style="-fx-font-weight: bold"/>
+      <Label text = "Tracking No." 
+GridPane.columnIndex = "0" GridPane.rowIndex = "4"/>
       <TextField 
-GridPane.columnIndex = "1" GridPane.rowIndex = "1"/>
-      <Button text = "Add" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "2"/>
+GridPane.columnIndex = "1" GridPane.rowIndex = "4"/>
+     
        <Text text = "Batch Upload" GridPane.columnSpan = "2" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "4" style="-fx-font-weight: bold"/>
+GridPane.columnIndex = "0" GridPane.rowIndex = "6" style="-fx-font-weight: bold"/>
+        <Label text = "Please select file containing tracking numbers" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "7"/>
+         <Button text = "Select File" 
+GridPane.columnIndex = "1" GridPane.rowIndex = "7" onAction = "#filePickerClicked"/>
+          <Text fx:id = "filename" 
+       GridPane.columnIndex = "1" GridPane.rowIndex = "8"/>
+           <Label text = "Output" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "9"/>
+         <TextArea fx:id = "appout" 
+GridPane.columnIndex = "1" GridPane.rowIndex = "9"/>
+         <Button text = "Process" GridPane.columnIndex = "1" GridPane.rowIndex = "10" onAction = "#processClicked"/>
 </GridPane>

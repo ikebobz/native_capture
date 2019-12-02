@@ -44,7 +44,7 @@ public class HtmlBrowser {
 	     ex.printStackTrace();
 		}
 	}
-	public void processHandler()
+	public void processHandler(String file,int batchSize,int recordcount)
 	{
 		try 
 		{
@@ -64,7 +64,8 @@ public class HtmlBrowser {
 		page =  conditionPin.click();
 		HtmlSelect condition  =  page.getElementByName("Condition");
 		condition.setSelectedIndex(1);
-		List<String> allValues = new ExcelReader().readFromExcel("D:\\sample.xls",2);
+                ExcelReader xReader =  new ExcelReader();
+		List<String> allValues = xReader.readFromExcel(file,recordcount);
 		for(String value : allValues)
 		addItem(page,value);
 		//System.out.println(page.asText());

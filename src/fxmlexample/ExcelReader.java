@@ -44,7 +44,12 @@ public List<String> readFromExcel(String filename,int rowsize) throws IOExceptio
 	myExcelBook.close();
 	return entries;
  }
-
+ public int getRecordCount()
+ {
+  int count = 0;
+  
+  return count;
+ }
 
 }
 
