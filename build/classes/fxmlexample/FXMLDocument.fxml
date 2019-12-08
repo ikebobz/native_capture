@@ -8,6 +8,7 @@
 <?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
+<?import javafx.collections.*?>
 
 <GridPane id="gridPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fxmlexample.FXMLDocumentController"  hgap = "10"
  vgap = "10">
@@ -22,24 +23,67 @@ GridPane.columnIndex = "1" GridPane.rowIndex = "0" maxWidth = "65" text = "10" /
 GridPane.columnIndex = "0" GridPane.rowIndex = "1"/>
       <TextField fx:id = "txt_recCount" 
 GridPane.columnIndex = "1" GridPane.rowIndex = "1" maxWidth = "65"/>
-    <Text text = "Interactive Upload" GridPane.columnSpan = "2" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "3" style="-fx-font-weight: bold"/>
-      <Label text = "Tracking No." 
+      <Label text = "Retrial Interval in millisec" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "2"/>
+      <TextField fx:id = "txt_retPeriod"
+GridPane.columnIndex = "1" GridPane.rowIndex = "2" maxWidth = "65" text = "10000"/>
+       <Label text = "Condition" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "3"/>
+       <ChoiceBox value="Item integrity confirmed" GridPane.columnIndex = "1" GridPane.rowIndex = "3" fx:id = "condition">
+    <items>
+        <FXCollections fx:factory="observableArrayList">
+            <String fx:value="Item integrity confirmed" />
+            <String fx:value="Damaged or torn" />
+            <String fx:value="Item violated" />
+        </FXCollections>
+    </items>
+</ChoiceBox>
+ <Label text = "Non Delivery Reason" 
 GridPane.columnIndex = "0" GridPane.rowIndex = "4"/>
-      <TextField 
-GridPane.columnIndex = "1" GridPane.rowIndex = "4"/>
+       <ChoiceBox value="At Addressee's request" GridPane.columnIndex = "1" GridPane.rowIndex = "4" fx:id = "ndelr">
+    <items>
+        <FXCollections fx:factory="observableArrayList">
+            <String fx:value="At Addressee's request" />
+            <String fx:value="At Sender's request" />
+            </FXCollections>
+    </items>
+</ChoiceBox>
+ <Label text = "Non Delivery measure" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "5"/>
+       <ChoiceBox value="Item scheduled for further processing/action" GridPane.columnIndex = "1" GridPane.rowIndex = "5" fx:id = "ndelm">
+    <items>
+        <FXCollections fx:factory="observableArrayList">
+            <String fx:value="Item scheduled for further processing/action" />
+            <String fx:value="Item forwarded/redirected" />
+            </FXCollections>
+    </items>
+</ChoiceBox>
+    <Text text = "Interactive Upload" GridPane.columnSpan = "2" 
+GridPane.columnIndex = "0" GridPane.rowIndex = "6" style="-fx-font-weight: bold"/>
+      <Label text = "Tracking No." 
+GridPane.columnIndex = "0" GridPane.rowIndex = "7"/>
+      <TextField fx:id = "txt_trackno" 
+GridPane.columnIndex = "1" GridPane.rowIndex = "7" onAction = "#onEnter"/>
      
        <Text text = "Batch Upload" GridPane.columnSpan = "2" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "6" style="-fx-font-weight: bold"/>
+GridPane.columnIndex = "0" GridPane.rowIndex = "9" style="-fx-font-weight: bold"/>
+       <RadioButton text="Click to upload tracking numbers from excel file"  fx:id="f1"
+       GridPane.columnIndex = "0" GridPane.rowIndex = "10"/>
         <Label text = "Please select file containing tracking numbers" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "7"/>
+GridPane.columnIndex = "0" GridPane.rowIndex = "11"/>
          <Button text = "Select File" 
-GridPane.columnIndex = "1" GridPane.rowIndex = "7" onAction = "#filePickerClicked"/>
+GridPane.columnIndex = "1" GridPane.rowIndex = "11" onAction = "#filePickerClicked"/>
           <Text fx:id = "filename" 
-       GridPane.columnIndex = "1" GridPane.rowIndex = "8"/>
+       GridPane.columnIndex = "1" GridPane.rowIndex = "12"/>
            <Label text = "Output" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "9"/>
+GridPane.columnIndex = "0" GridPane.rowIndex = "13"/>
          <TextArea fx:id = "appout" 
-GridPane.columnIndex = "1" GridPane.rowIndex = "9"/>
-         <Button text = "Process" GridPane.columnIndex = "1" GridPane.rowIndex = "10" onAction = "#processClicked"/>
+GridPane.columnIndex = "1" GridPane.rowIndex = "13"/>
+         <Button text = "Process" GridPane.columnIndex = "1" GridPane.rowIndex = "14" onAction = "#processClicked"/>
+         <Label text = "User Credentials." 
+GridPane.columnIndex = "0" GridPane.rowIndex = "16"/>
+      <TextField fx:id = "user" 
+GridPane.columnIndex = "1" GridPane.rowIndex = "16" maxWidth = "150"/>
+      <PasswordField fx:id = "pass"
+GridPane.columnIndex = "1" GridPane.rowIndex = "17" maxWidth = "150"/>
 </GridPane>

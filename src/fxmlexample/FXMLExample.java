@@ -21,7 +21,7 @@ public class FXMLExample extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
         
-        Scene scene = new Scene(root,500,375);
+        Scene scene = new Scene(root,800,800);
         stage.setTitle("Capturing Automated 1.0");
         
         stage.setScene(scene);
