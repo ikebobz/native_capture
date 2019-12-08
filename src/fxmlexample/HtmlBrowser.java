@@ -47,7 +47,13 @@ public class HtmlBrowser {
 	{
 		try
 		{
-               HtmlTextInput identifier = (HtmlTextInput)page.getElementById("MailitemIdentifier");
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("Adding Item "+entry+"\n");
+                 }
+                 });
+                HtmlTextInput identifier = (HtmlTextInput)page.getElementById("MailitemIdentifier");
 		identifier.setValueAttribute(entry);
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnAddOrStore");
 		page = addbtn.click();	
@@ -64,6 +70,12 @@ public class HtmlBrowser {
                try 
 		{
 		
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("Establishing connection to IPS Servers......\n");
+                 }
+                 });
                 WebClient client = new WebClient();
 		page = client.getPage("http://41.204.247.247/IPSWeb");
 		HtmlInput user = page.getElementByName("Username");
@@ -71,21 +83,39 @@ public class HtmlBrowser {
 		HtmlInput pass = page.getElementByName("Password");
 		pass.setValueAttribute(passw);
 		HtmlButton btn =  (HtmlButton) page.getElementById("btnLogin");
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("Loggin in.......\n");
+                 }
+                 });
 		page = btn.click();
                 if(page.asText().contains("Incorrect username or password"))
                 {
                  Platform.runLater(new Runnable(){
                  public void run()
                  {
-                 tarea.appendText("Incorrect username or password");
+                 tarea.appendText("Incorrect username or password\n");
                  }
                  });
                  return;
                 }
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("Logged In\n");
+                 }
+                 });
 		HtmlAnchor tracktrace = page.getAnchorByText("Letters");
 		page = tracktrace.click();
 		HtmlAnchor loc_office_rec = page.getAnchorByText("Receive letters at local delivery office (EMG)");
 		page = loc_office_rec.click();
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("Seeting Capture parameters\n");
+                 }
+                 });
 		HtmlCheckBoxInput conditionPin = (HtmlCheckBoxInput)page.getElementByName("ConditionPinCheckBox");
 		page =  conditionPin.click();
 		HtmlSelect condition  =  page.getElementByName("Condition");
@@ -153,14 +183,15 @@ public class HtmlBrowser {
                  
                 
                 }
-		//System.out.println(page.asText());
+		JOptionPane.showMessageDialog(null, "Processing Complete");
 		
 		//for(String value : values) System.out.println(value);
 		
 		}
 		catch(Exception ex)
 		{
-			System.out.println(ex.getMessage());	
+			System.out.println(ex.getMessage());
+                        JOptionPane.showMessageDialog(null, ex.getMessage());
 		}
 			
 	}
@@ -183,14 +214,21 @@ public class HtmlBrowser {
               String pagehtml = "";
             try
 		{
-                System.out.println(page.asText());
+                //System.out.println(page.asText());
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("Storing batch......");
+                 }
+                 });
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnStore");
 		page = addbtn.click();	
-                pagehtml = page.asText();
+                
 		}
 		catch(Exception ex)
 		{
-	     ex.printStackTrace();
+	         //ex.printStackTrace();
+             JOptionPane.showMessageDialog(null, ex.getMessage());
 		}
             return pagehtml;
         }
