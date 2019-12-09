@@ -77,7 +77,7 @@ public class HtmlBrowser {
                  }
                  });
                 WebClient client = new WebClient();
-		page = client.getPage("http://41.204.247.247/IPSWeb");
+		page = client.getPage("http://41.204.247.247/IPSWeb/EN/Users/Login");
 		HtmlInput user = page.getElementByName("Username");
 		user.setValueAttribute(username);
 		HtmlInput pass = page.getElementByName("Password");
@@ -136,7 +136,7 @@ public class HtmlBrowser {
                  {
                  String value = tracknos.get(count);
                  String response = addItem(value);
-                 if(response.contains(value))
+                 if(response.contains(value) && page.getElementsByTagName("table").size()>0)
                  {
                  Platform.runLater(new Runnable(){
                  public void run()
@@ -167,7 +167,7 @@ public class HtmlBrowser {
                          btchsz = count + batchSize;
                          Thread.sleep(retrialCycle);
                      }
-                     else if(response.contains("The operation was successful"))
+                     if(response.contains("The operation was successful"))
                      {  
                          
                          btchsz=batchSize+count;
@@ -178,6 +178,16 @@ public class HtmlBrowser {
                          }
                          });
                      
+                     }
+                     if(response.equals(""))
+                     {
+                         btchsz=batchSize+count;
+                         Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.appendText("Could not commit batch...\n");
+                         }
+                         });
                      }
                  } 
                  
@@ -222,13 +232,19 @@ public class HtmlBrowser {
                  }
                  });
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnStore");
-		page = addbtn.click();	
+                if(addbtn!=null)
+                {
+		page = addbtn.click();
+                pagehtml = page.asText();
+                }
+               
+                
                 
 		}
 		catch(Exception ex)
 		{
 	         //ex.printStackTrace();
-             JOptionPane.showMessageDialog(null, ex.getMessage());
+             
 		}
             return pagehtml;
         }
