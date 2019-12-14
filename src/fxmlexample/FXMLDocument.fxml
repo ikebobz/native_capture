@@ -79,7 +79,7 @@ GridPane.columnIndex = "1" GridPane.rowIndex = "11" onAction = "#filePickerClick
 GridPane.columnIndex = "0" GridPane.rowIndex = "13"/>
          <TextArea fx:id = "appout" 
 GridPane.columnIndex = "1" GridPane.rowIndex = "13"/>
-<HBox GridPane.columnIndex = "1" GridPane.rowIndex = "14" spacing = "10">
+<HBox GridPane.columnIndex = "1" GridPane.rowIndex = "14" spacing = "15">
           <Button text = "Process"  onAction = "#processClicked"/>
          <Button text = "Reset"  onAction = "#resetClicked"/>
 </HBox>

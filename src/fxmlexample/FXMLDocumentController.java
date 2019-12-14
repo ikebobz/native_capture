@@ -125,8 +125,8 @@ public class FXMLDocumentController implements Initializable {
      browser.passw = pass.getText();
      browser.retrialCycle = Integer.parseInt(txt_retPeriod.getText());
      browser.condition = condition.getValue().toString();
-     browser.nondeliver_m = ndelm.getValue().toString();
-     browser.nondeliver_r = ndelr.getValue().toString();
+     browser.nondeliver_m = ndelm.getSelectionModel().getSelectedIndex();
+     browser.nondeliver_r = ndelr.getSelectionModel().getSelectedIndex();
      if(f1.isSelected()) browser.useFile = true;
      if(!f1.isSelected() && regnos.isEmpty())
      {
@@ -137,7 +137,7 @@ public class FXMLDocumentController implements Initializable {
       browser.tracknos = regnos;
      }
      appout.appendText("Processing.................\n");
-     browser.startTask();
+     //browser.startTask();
     }
     
     

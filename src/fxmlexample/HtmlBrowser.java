@@ -35,8 +35,8 @@ public class HtmlBrowser {
         String username;
         String passw;
         String condition;
-        String nondeliver_r;
-        String nondeliver_m;
+        int nondeliver_r;
+        int nondeliver_m;
         javafx.scene.control.TextArea tarea;
         boolean useFile = false;
 	
@@ -51,16 +51,12 @@ public class HtmlBrowser {
 	{
 		try
 		{
-                 Platform.runLater(new Runnable(){
-                 public void run()
-                 {
-                 tarea.appendText("Adding Item "+entry+"\n");
-                 }
-                 });
+                 
                 HtmlTextInput identifier = (HtmlTextInput)page.getElementById("MailitemIdentifier");
 		identifier.setValueAttribute(entry);
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnAddOrStore");
-		page = addbtn.click();	
+		page = addbtn.click();
+                Thread.sleep(5000);
 		}
 		catch(Exception ex)
 		{
@@ -90,7 +86,7 @@ public class HtmlBrowser {
                  }
                  });
                 WebClient client = new WebClient();
-                client.getOptions().setTimeout(60000);
+                client.getOptions().setTimeout(120000);
 		page = client.getPage("http://41.204.247.247/IPSWeb/EN/Users/Login");
 		HtmlInput user = page.getElementByName("Username");
 		user.setValueAttribute(username);
@@ -144,6 +140,7 @@ public class HtmlBrowser {
                 ExcelReader xReader =  new ExcelReader();
 		tracknos = xReader.readFromExcel(file,recCount);
                 }
+                //Thread.sleep(2000);
                 int count = 0;
 		while(count < recCount)
                 {
@@ -170,7 +167,7 @@ public class HtmlBrowser {
                  });
                  
                  }
-                 Thread.sleep(1000);
+                 Thread.sleep(500);
                  count++;
                  if(count==btchsz)
                  {
@@ -204,7 +201,7 @@ public class HtmlBrowser {
                          });
                      }
                      else 
-                         System.out.println(result);
+                         btchsz = batchSize + count;
                  
                  }
                   
@@ -230,6 +227,28 @@ public class HtmlBrowser {
 		}
 			
 	}
+        protected void unsuccessful()
+        {
+        try
+        {
+        HtmlAnchor foInb = page.getAnchorByText("Inbound");
+        page = foInb.click();
+        HtmlAnchor unsuc = page.getAnchorByText("Record unsuccessful delivery (EMH)");
+        page = unsuc.click();
+        HtmlCheckBoxInput conditionPin = (HtmlCheckBoxInput)page.getElementByName("NonDeliveryReasonPinCheckBox");
+	page =  conditionPin.click();
+	HtmlSelect condition  =  page.getElementByName("NonDeliveryReason");
+        condition.setSelectedIndex(21);
+        HtmlCheckBoxInput nondelmeas = (HtmlCheckBoxInput)page.getElementByName("NonDeliveryMeasurePinCheckBox");
+        nondelmeas.click();
+        HtmlSelect nondelmeasact  =  page.getElementByName("NonDeliveryMeasure");
+        nondelmeasact.setSelectedIndex(1);
+        }
+        catch(Exception ex)
+        {
+        
+        }
+        }
         public void  startTask()
         {
         Runnable task = new Runnable(){
@@ -250,16 +269,12 @@ public class HtmlBrowser {
             try
 		{
                 //System.out.println(page.asText());
-                 Platform.runLater(new Runnable(){
-                 public void run()
-                 {
-                 tarea.appendText("Atempting to Store batch......");
-                 }
-                 });
+                 
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnStore");
                 if(addbtn!=null)
                 {
 		page = addbtn.click();
+                Thread.sleep(5000);
                 pagehtml = page.asText();
                 }
                
