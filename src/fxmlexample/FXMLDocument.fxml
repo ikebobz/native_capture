@@ -79,11 +79,14 @@ GridPane.columnIndex = "1" GridPane.rowIndex = "11" onAction = "#filePickerClick
 GridPane.columnIndex = "0" GridPane.rowIndex = "13"/>
          <TextArea fx:id = "appout" 
 GridPane.columnIndex = "1" GridPane.rowIndex = "13"/>
-         <Button text = "Process" GridPane.columnIndex = "1" GridPane.rowIndex = "14" onAction = "#processClicked"/>
+<HBox GridPane.columnIndex = "1" GridPane.rowIndex = "14" spacing = "10">
+          <Button text = "Process"  onAction = "#processClicked"/>
+         <Button text = "Reset"  onAction = "#resetClicked"/>
+</HBox>
          <Label text = "User Credentials." 
 GridPane.columnIndex = "0" GridPane.rowIndex = "16"/>
       <TextField fx:id = "user" 
-GridPane.columnIndex = "1" GridPane.rowIndex = "16" maxWidth = "150"/>
+GridPane.columnIndex = "1" GridPane.rowIndex = "16" maxWidth = "150" text = "robinson18"/>
       <PasswordField fx:id = "pass"
-GridPane.columnIndex = "1" GridPane.rowIndex = "17" maxWidth = "150"/>
+GridPane.columnIndex = "1" GridPane.rowIndex = "17" maxWidth = "150" text = "Iken88"/>
 </GridPane>

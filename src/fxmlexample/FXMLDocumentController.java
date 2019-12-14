@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 
@@ -49,10 +51,11 @@ public class FXMLDocumentController implements Initializable {
     
     @FXML
     private void filePickerClicked(ActionEvent event) {
-    FileChooser fileChooser = new FileChooser();
-    FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter( "*.xls","xls");
-    fileChooser.getExtensionFilters().add(extFilter);
-    File file = fileChooser.showOpenDialog(null);
+    JFileChooser fileChooser = new JFileChooser();
+    FileNameExtensionFilter extFilter = new FileNameExtensionFilter( "Excel file","xls");
+    fileChooser.setFileFilter(extFilter);
+    fileChooser.showOpenDialog(null);
+    java.io.File file = fileChooser.getSelectedFile();
     if(file!=null){
     filename.setText(file.getAbsolutePath());
     tracknos = file.getAbsolutePath();
@@ -69,6 +72,12 @@ public class FXMLDocumentController implements Initializable {
     appout.appendText(txt_trackno.getText()+"\n");
     regnos.add(txt_trackno.getText());
     txt_trackno.clear();
+    }
+    @FXML
+    public void resetClicked(ActionEvent event)
+    {
+    appout.clear();
+    if(regnos.size()>0)regnos.clear();
     }
     @FXML
     private void processClicked(ActionEvent event)
@@ -98,12 +107,13 @@ public class FXMLDocumentController implements Initializable {
      {
      JOptionPane.showMessageDialog(null, "Please click the load excel file radiobutton");
      return;
+     
      }
-       if(!isConnected()) 
+      /* if(!isConnected()) 
        {
            appout.appendText("Internet Connectivity Broken");
            return;
-       }
+       }*/
      int count = Integer.parseInt(txt_recCount.getText());
      //new HtmlBrowser().processHandler(tracknos, Integer.parseInt(txt_btchsize.getText()),count);
      HtmlBrowser browser = new HtmlBrowser();
@@ -129,20 +139,6 @@ public class FXMLDocumentController implements Initializable {
      appout.appendText("Processing.................\n");
      browser.startTask();
     }
-    public boolean isConnected()
-    {
-    boolean connected = false;
-    try {
-         URL url = new URL("http://41.204.247.247/IPSWeb");
-         URLConnection connection = url.openConnection();
-         connection.connect();
-         connected = true;
-      } catch (MalformedURLException e) {
-         
-      } catch (IOException e) {
-        
-      }
-    return connected;
-    }
+    
     
 }

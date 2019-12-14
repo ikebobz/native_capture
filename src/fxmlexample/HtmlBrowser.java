@@ -14,6 +14,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 
@@ -69,7 +73,16 @@ public class HtmlBrowser {
 		int btchsz = batchSize;
                try 
 		{
-		
+		 if(!isConnected())
+                 {
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("Internet Connectivity Broken");
+                 }
+                 });
+                 return;
+                 }
                  Platform.runLater(new Runnable(){
                  public void run()
                  {
@@ -77,6 +90,7 @@ public class HtmlBrowser {
                  }
                  });
                 WebClient client = new WebClient();
+                client.getOptions().setTimeout(60000);
 		page = client.getPage("http://41.204.247.247/IPSWeb/EN/Users/Login");
 		HtmlInput user = page.getElementByName("Username");
 		user.setValueAttribute(username);
@@ -113,17 +127,18 @@ public class HtmlBrowser {
                  Platform.runLater(new Runnable(){
                  public void run()
                  {
-                 tarea.appendText("Seeting Capture parameters\n");
+                 tarea.appendText("Setting Capture parameters\n");
                  }
                  });
 		HtmlCheckBoxInput conditionPin = (HtmlCheckBoxInput)page.getElementByName("ConditionPinCheckBox");
 		page =  conditionPin.click();
 		HtmlSelect condition  =  page.getElementByName("Condition");
-                if(condition.equals("Item integrity confirmed"))
+                /*if(condition.equals("Item integrity confirmed"))
 		condition.setSelectedIndex(1);
                 if (condition.equals("Damaged or torn"))
                     condition.setSelectedIndex(2);
-                if(condition.equals("Item violated")) condition.setSelectedIndex(3);
+                if(condition.equals("Item violated"))*/
+                condition.setSelectedIndex(1);
                 if(useFile)
                 {
                 ExcelReader xReader =  new ExcelReader();
@@ -132,10 +147,10 @@ public class HtmlBrowser {
                 int count = 0;
 		while(count < recCount)
                 {
-		 if(count < btchsz)
-                 {
+		 
                  String value = tracknos.get(count);
                  String response = addItem(value);
+                 System.out.println(response);
                  if(response.contains(value) && page.getElementsByTagName("table").size()>0)
                  {
                  Platform.runLater(new Runnable(){
@@ -155,19 +170,18 @@ public class HtmlBrowser {
                  });
                  
                  }
-                 Thread.sleep(5000);
+                 Thread.sleep(1000);
                  count++;
-                 } 
-                 else 
+                 if(count==btchsz)
                  {
-                     String response = storeitems();
-                     if(response.contains("error occurred while")) 
+                     String result = storeitems();
+                     if(result.contains("error occurred while")) 
                      {
                          count=count-batchSize;
                          btchsz = count + batchSize;
                          Thread.sleep(retrialCycle);
                      }
-                     if(response.contains("The operation was successful"))
+                     if(result.contains("The operation was successful"))
                      {  
                          
                          btchsz=batchSize+count;
@@ -179,7 +193,7 @@ public class HtmlBrowser {
                          });
                      
                      }
-                     if(response.equals(""))
+                     if(result.equals(""))
                      {
                          btchsz=batchSize+count;
                          Platform.runLater(new Runnable(){
@@ -189,8 +203,12 @@ public class HtmlBrowser {
                          }
                          });
                      }
-                 } 
+                     else 
+                         System.out.println(result);
                  
+                 }
+                  
+                
                 
                 }
 		JOptionPane.showMessageDialog(null, "Processing Complete");
@@ -200,8 +218,15 @@ public class HtmlBrowser {
 		}
 		catch(Exception ex)
 		{
-			System.out.println(ex.getMessage());
-                        JOptionPane.showMessageDialog(null, ex.getMessage());
+		System.out.println(ex.getMessage());
+                JOptionPane.showMessageDialog(null,"Service is down");
+                Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.clear();
+                 }
+                 });
+                   
 		}
 			
 	}
@@ -228,7 +253,7 @@ public class HtmlBrowser {
                  Platform.runLater(new Runnable(){
                  public void run()
                  {
-                 tarea.appendText("Storing batch......");
+                 tarea.appendText("Atempting to Store batch......");
                  }
                  });
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnStore");
@@ -248,6 +273,21 @@ public class HtmlBrowser {
 		}
             return pagehtml;
         }
+        public boolean isConnected()
+    {
+    boolean connected = false;
+    try {
+         URL url = new URL("http://192.168.8.1");
+         URLConnection connection = url.openConnection();
+         connection.connect();
+         connected = true;
+      } catch (MalformedURLException e) {
+         
+      } catch (IOException e) {
+        
+      }
+    return connected;
+    }
 
 
 }
