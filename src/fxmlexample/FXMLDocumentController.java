@@ -72,11 +72,13 @@ public class FXMLDocumentController implements Initializable {
     appout.appendText(txt_trackno.getText()+"\n");
     regnos.add(txt_trackno.getText());
     txt_trackno.clear();
+    txt_recCount.setText(String.valueOf(regnos.size()));
     }
     @FXML
     public void resetClicked(ActionEvent event)
     {
     appout.clear();
+    txt_recCount.clear();
     if(regnos.size()>0)regnos.clear();
     }
     @FXML
@@ -137,7 +139,7 @@ public class FXMLDocumentController implements Initializable {
       browser.tracknos = regnos;
      }
      appout.appendText("Processing.................\n");
-     //browser.startTask();
+     browser.startTask();
     }
     
     

@@ -85,7 +85,7 @@ public class HtmlBrowser {
                  tarea.appendText("Establishing connection to IPS Servers......\n");
                  }
                  });
-                WebClient client = new WebClient();
+                WebClient client = new WebClient(BrowserVersion.FIREFOX_60);
                 client.getOptions().setTimeout(120000);
 		page = client.getPage("http://41.204.247.247/IPSWeb/EN/Users/Login");
 		HtmlInput user = page.getElementByName("Username");
@@ -208,7 +208,12 @@ public class HtmlBrowser {
                 
                 
                 }
-		JOptionPane.showMessageDialog(null, "Processing Complete");
+		Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.appendText("REGISTERING FOR UNSUCCESSFUL DELIVERY........\n");
+                         }
+                         });
 		
 		//for(String value : values) System.out.println(value);
 		
@@ -229,6 +234,7 @@ public class HtmlBrowser {
 	}
         protected void unsuccessful()
         {
+        int btchsz = batchSize;
         try
         {
         HtmlAnchor foInb = page.getAnchorByText("Inbound");
@@ -238,11 +244,87 @@ public class HtmlBrowser {
         HtmlCheckBoxInput conditionPin = (HtmlCheckBoxInput)page.getElementByName("NonDeliveryReasonPinCheckBox");
 	page =  conditionPin.click();
 	HtmlSelect condition  =  page.getElementByName("NonDeliveryReason");
+        if(nondeliver_r==0)
         condition.setSelectedIndex(21);
+        if(nondeliver_r==1)
+        condition.setSelectedIndex(20);
         HtmlCheckBoxInput nondelmeas = (HtmlCheckBoxInput)page.getElementByName("NonDeliveryMeasurePinCheckBox");
         nondelmeas.click();
         HtmlSelect nondelmeasact  =  page.getElementByName("NonDeliveryMeasure");
+        if(nondeliver_m==0)
         nondelmeasact.setSelectedIndex(1);
+        if(nondeliver_m==1)
+        nondelmeasact.setSelectedIndex(2);
+        int count = 0;
+		while(count < recCount)
+                {
+		 
+                 String value = tracknos.get(count);
+                 String response = addItem(value);
+                 System.out.println(response);
+                 if(response.contains(value) && page.getElementsByTagName("table").size()>0)
+                 {
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText(value+ " added\n");
+                 }
+                 });
+                 }
+                 else 
+                 {
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("could not add "+value+"\n");
+                 }
+                 });
+                 
+                 }
+                 Thread.sleep(500);
+                 count++;
+                 if(count==btchsz)
+                 {
+                     String result = storeitems();
+                     if(result.contains("error occurred while")) 
+                     {
+                         count=count-batchSize;
+                         btchsz = count + batchSize;
+                         Thread.sleep(retrialCycle);
+                     }
+                     if(result.contains("The operation was successful"))
+                     {  
+                         
+                         btchsz=batchSize+count;
+                         Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.appendText("Store successful..commencing next batch!!\n");
+                         }
+                         });
+                     
+                     }
+                     if(result.equals(""))
+                     {
+                         btchsz=batchSize+count;
+                         Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.appendText("Could not commit batch...\n");
+                         }
+                         });
+                     }
+                     else 
+                         btchsz = batchSize + count;
+                 
+                 }
+                  
+                
+                
+                }
+		JOptionPane.showMessageDialog(null, "Processing Complete");
+		
+        
         }
         catch(Exception ex)
         {
@@ -256,6 +338,7 @@ public class HtmlBrowser {
         public void run()
         {
         processHandler();
+        //unsuccessful();
         }
         };
         Thread worker = new Thread(task);

@@ -11,7 +11,7 @@
   </resources>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="FXMLExample.jar" size="19400" download="eager" />
+    <jar href="FXMLExample.jar" size="22050" download="eager" />
     <jar href="lib/commons-codec-1.11.jar" size="335042" download="eager" />
     <jar href="lib/commons-codec-1.9.jar" size="263965" download="eager" />
     <jar href="lib/commons-io-2.6.jar" size="214788" download="eager" />
