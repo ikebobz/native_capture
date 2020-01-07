@@ -8,12 +8,15 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,7 +41,14 @@ public class HtmlBrowser {
         int nondeliver_r;
         int nondeliver_m;
         javafx.scene.control.TextArea tarea;
+        javafx.scene.text.Text appStatus;
         boolean useFile = false;
+        boolean reachable = true;
+        boolean udaonly = false;
+        int lastStore =0;
+        BufferedWriter writer;
+        int count;
+        int progress;
 	
 
 	public static void main(String[] args) 
@@ -51,13 +61,24 @@ public class HtmlBrowser {
 	{
 		try
 		{
+                
                  
                 HtmlTextInput identifier = (HtmlTextInput)page.getElementById("MailitemIdentifier");
 		identifier.setValueAttribute(entry);
+                //identifier.getValueAttribute();
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnAddOrStore");
 		page = addbtn.click();
-                Thread.sleep(5000);
-		}
+                int numtries = 0;
+                 while(page.getWebClient().waitForBackgroundJavaScript(5000) > 0)
+                 {
+                  
+                  if(numtries == 5) return "bad_wait";
+                  numtries++;
+                 }
+                 //Thread.sleep(5000);
+                //}
+                 }
+		
 		catch(Exception ex)
 		{
 	     ex.printStackTrace();
@@ -67,16 +88,20 @@ public class HtmlBrowser {
 	public void processHandler()
 	{
 		int btchsz = batchSize;
-               try 
+                int batchmark = 0;
+                try 
+                
 		{
-		 if(!isConnected())
+		 writer = new BufferedWriter(new FileWriter("process.log"));
+                 if(!isConnected())
                  {
                  Platform.runLater(new Runnable(){
                  public void run()
                  {
-                 tarea.appendText("Internet Connectivity Broken");
+                 tarea.appendText("Local Area Connectivity Broken");
                  }
                  });
+                 reachable = false;
                  return;
                  }
                  Platform.runLater(new Runnable(){
@@ -85,9 +110,10 @@ public class HtmlBrowser {
                  tarea.appendText("Establishing connection to IPS Servers......\n");
                  }
                  });
-                WebClient client = new WebClient(BrowserVersion.FIREFOX_60);
-                client.getOptions().setTimeout(120000);
-		page = client.getPage("http://41.204.247.247/IPSWeb/EN/Users/Login");
+                WebClient client = new WebClient();
+                client.getOptions().setTimeout(300000);
+                client.getOptions().setJavaScriptEnabled(true);
+		page = client.getPage("http://41.204.247.247/IPSWeb/");
 		HtmlInput user = page.getElementByName("Username");
 		user.setValueAttribute(username);
 		HtmlInput pass = page.getElementByName("Password");
@@ -108,6 +134,7 @@ public class HtmlBrowser {
                  tarea.appendText("Incorrect username or password\n");
                  }
                  });
+                 reachable = false;
                  return;
                 }
                  Platform.runLater(new Runnable(){
@@ -120,7 +147,13 @@ public class HtmlBrowser {
 		page = tracktrace.click();
 		HtmlAnchor loc_office_rec = page.getAnchorByText("Receive letters at local delivery office (EMG)");
 		page = loc_office_rec.click();
-                 Platform.runLater(new Runnable(){
+                if(useFile)
+                {
+                ExcelReader xReader =  new ExcelReader();
+		tracknos = xReader.readFromExcel(file,recCount);
+                }
+                if(udaonly) return;
+                Platform.runLater(new Runnable(){
                  public void run()
                  {
                  tarea.appendText("Setting Capture parameters\n");
@@ -129,26 +162,25 @@ public class HtmlBrowser {
 		HtmlCheckBoxInput conditionPin = (HtmlCheckBoxInput)page.getElementByName("ConditionPinCheckBox");
 		page =  conditionPin.click();
 		HtmlSelect condition  =  page.getElementByName("Condition");
-                /*if(condition.equals("Item integrity confirmed"))
-		condition.setSelectedIndex(1);
-                if (condition.equals("Damaged or torn"))
-                    condition.setSelectedIndex(2);
-                if(condition.equals("Item violated"))*/
                 condition.setSelectedIndex(1);
-                if(useFile)
-                {
-                ExcelReader xReader =  new ExcelReader();
-		tracknos = xReader.readFromExcel(file,recCount);
-                }
+                
                 //Thread.sleep(2000);
-                int count = 0;
+                count = 0;progress = 0;
 		while(count < recCount)
                 {
-		 
+		 progress = count+1;
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 appStatus.setText("Acceptance - Processing item "+progress+"/"+recCount);
+                 }
+                 });
                  String value = tracknos.get(count);
                  String response = addItem(value);
                  System.out.println(response);
-                 if(response.contains(value) && page.getElementsByTagName("table").size()>0)
+                 writer.append(response);
+                 HtmlTextInput identifier = (HtmlTextInput)page.getElementById("MailitemIdentifier");
+                 if(!identifier.getValueAttribute().equals(value) && response.contains(value)&& page.getElementsByTagName("table").size()>0)
                  {
                  Platform.runLater(new Runnable(){
                  public void run()
@@ -157,30 +189,54 @@ public class HtmlBrowser {
                  }
                  });
                  }
-                 else 
+                 if(response.contains("An error occurred while processing the request"))
+                 {
+                 //batchmark = count;
+                 count=lastStore;
+                 btchsz = count + batchSize;
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("ERROR ADDING ITEM....RETRYING UNSAVED BATCH......IN"+(retrialCycle/1000)+" SECONDS\n");
+                 }
+                 });
+                 Thread.sleep(retrialCycle);
+                 continue;
+                 }
+                 if(response.contains("Item not found in the database"))
                  {
                  Platform.runLater(new Runnable(){
                  public void run()
                  {
-                 tarea.appendText("could not add "+value+"\n");
+                 tarea.appendText(value+" - item not found in database\n");
                  }
                  });
                  
                  }
+                 
                  Thread.sleep(500);
                  count++;
-                 if(count==btchsz)
+                 if(count==btchsz || count == recCount )
                  {
+                    //  batchmark = count;
                      String result = storeitems();
                      if(result.contains("error occurred while")) 
                      {
-                         count=count-batchSize;
-                         btchsz = count + batchSize;
+                          count = lastStore;
+                         //batchmark = count;
+                         //btchsz = count + batchSize;
+                         Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                       tarea.appendText("ERROR STORING BATCH.....RETRYING UNSAVED BATCH......IN"+(retrialCycle/1000)+" SECONDS\n");
+                         }
+                        });
                          Thread.sleep(retrialCycle);
+                         continue;
                      }
                      if(result.contains("The operation was successful"))
                      {  
-                         
+                         lastStore = count;
                          btchsz=batchSize+count;
                          Platform.runLater(new Runnable(){
                          public void run()
@@ -190,6 +246,19 @@ public class HtmlBrowser {
                          });
                      
                      }
+                     
+                     if(result.equals("bad_wait"))
+                     {
+                         lastStore = count;
+                         btchsz=batchSize+count;
+                         Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.appendText("Wait for Store Operation Timeout....\nPlease track & trace selected items in last batch\n to ascertain registration status");
+                         }
+                         });
+                     }
+                     
                      if(result.equals(""))
                      {
                          btchsz=batchSize+count;
@@ -208,41 +277,44 @@ public class HtmlBrowser {
                 
                 
                 }
-		Platform.runLater(new Runnable(){
-                         public void run()
-                         {
-                         tarea.appendText("REGISTERING FOR UNSUCCESSFUL DELIVERY........\n");
-                         }
-                         });
-		
-		//for(String value : values) System.out.println(value);
-		
-		}
+                }
 		catch(Exception ex)
 		{
-		System.out.println(ex.getMessage());
-                JOptionPane.showMessageDialog(null,"Service is down");
+		reachable = false;
+                System.out.println(ex.getMessage());
+                JOptionPane.showMessageDialog(null,"Service is unreachable");
                 Platform.runLater(new Runnable(){
                  public void run()
                  {
                  tarea.clear();
                  }
                  });
+                
                    
 		}
 			
 	}
         protected void unsuccessful()
         {
+        if(!reachable) return;
+            Platform.runLater(new Runnable(){
+                public void run()
+                {
+                tarea.appendText("REGISTERING FOR UNSUCCESSFUL DELIVERY........\n");
+                }
+               });
+        
         int btchsz = batchSize;
+        lastStore = 0;
         try
         {
+        writer.append("REGISTERING FOR UNSUCCESSFUL PHASE..");
         HtmlAnchor foInb = page.getAnchorByText("Inbound");
         page = foInb.click();
         HtmlAnchor unsuc = page.getAnchorByText("Record unsuccessful delivery (EMH)");
         page = unsuc.click();
         HtmlCheckBoxInput conditionPin = (HtmlCheckBoxInput)page.getElementByName("NonDeliveryReasonPinCheckBox");
-	page =  conditionPin.click();
+	conditionPin.click();
 	HtmlSelect condition  =  page.getElementByName("NonDeliveryReason");
         if(nondeliver_r==0)
         condition.setSelectedIndex(21);
@@ -250,19 +322,35 @@ public class HtmlBrowser {
         condition.setSelectedIndex(20);
         HtmlCheckBoxInput nondelmeas = (HtmlCheckBoxInput)page.getElementByName("NonDeliveryMeasurePinCheckBox");
         nondelmeas.click();
-        HtmlSelect nondelmeasact  =  page.getElementByName("NonDeliveryMeasure");
+        HtmlSelect nondelmeasact = (HtmlSelect)page.getElementById("NonDeliveryMeasure");
         if(nondeliver_m==0)
-        nondelmeasact.setSelectedIndex(1);
+        {
+        page.executeJavaScript(JScripts.code1);
+        HtmlOption option = nondelmeasact.getOptionByValue("B");   
+        nondelmeasact.setSelectedAttribute(option, true);
+        }
         if(nondeliver_m==1)
-        nondelmeasact.setSelectedIndex(2);
-        int count = 0;
+        {
+        page.executeJavaScript(JScripts.code1);
+        HtmlOption option = nondelmeasact.getOptionByValue("F");   
+        nondelmeasact.setSelectedAttribute(option, true);
+        }
+        count = 0;progress = 0;
 		while(count < recCount)
                 {
-		 
+		 progress = count + 1;
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 appStatus.setText("Unsuccessful Attempt - Processing item "+progress+"/"+recCount);
+                 }
+                 });
                  String value = tracknos.get(count);
                  String response = addItem(value);
                  System.out.println(response);
-                 if(response.contains(value) && page.getElementsByTagName("table").size()>0)
+                 writer.append(response);
+                 HtmlTextInput identifier = (HtmlTextInput)page.getElementById("MailitemIdentifier");
+                 if(!identifier.getValueAttribute().equals(value)&&response.contains(value) && page.getElementsByTagName("table").size()>0)
                  {
                  Platform.runLater(new Runnable(){
                  public void run()
@@ -271,7 +359,48 @@ public class HtmlBrowser {
                  }
                  });
                  }
-                 else 
+                 if(response.contains("An error occurred while processing the request"))
+                 {
+                 //batchmark = count;
+                 count=btchsz-batchSize;
+                 btchsz = count + batchSize;
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText("ERROR ADDING ITEM....RETRYING UNSAVED BATCH......IN"+(retrialCycle/1000)+" SECONDS\n");
+                 }
+                 });
+                 Thread.sleep(retrialCycle);
+                 continue;
+                 }
+                 if(response.contains("Item not found in the database"))
+                 {
+                 Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 tarea.appendText(value+" - item not found in database \n");
+                 }
+                 });
+                 }
+                 if(response.contains("The Non delivery measure field is required.")||response.contains("unchecked Non delivery measure *"))
+                 {
+                 nondelmeas.setChecked(true);
+                 if(nondeliver_m==0)
+                 {
+                 page.executeJavaScript(JScripts.code1);
+                 HtmlOption option = nondelmeasact.getOptionByValue("B");   
+                 nondelmeasact.setSelectedAttribute(option, true);
+                 }
+                 if(nondeliver_m==1)
+                {
+                 page.executeJavaScript(JScripts.code1);
+                 HtmlOption option = nondelmeasact.getOptionByValue("F");   
+                 nondelmeasact.setSelectedAttribute(option, true);
+                 }
+                 if(identifier.getValueAttribute().equals(value))
+                 continue;
+                 }
+                /* else 
                  {
                  Platform.runLater(new Runnable(){
                  public void run()
@@ -280,21 +409,27 @@ public class HtmlBrowser {
                  }
                  });
                  
-                 }
+                 }*/
                  Thread.sleep(500);
                  count++;
-                 if(count==btchsz)
+                 if(count==btchsz || count == recCount)
                  {
                      String result = storeitems();
                      if(result.contains("error occurred while")) 
                      {
-                         count=count-batchSize;
-                         btchsz = count + batchSize;
+                         count=lastStore;
+                         //btchsz = count + batchSize;
+                         Platform.runLater(new Runnable(){
+                         public void run()
+                       {
+                       tarea.appendText("ERROR ADDING ITEM....RETRYING UNSAVED BATCH......IN"+(retrialCycle/1000)+" SECONDS\n");
+                       }
+                        });
                          Thread.sleep(retrialCycle);
                      }
                      if(result.contains("The operation was successful"))
                      {  
-                         
+                         lastStore = count;
                          btchsz=batchSize+count;
                          Platform.runLater(new Runnable(){
                          public void run()
@@ -303,6 +438,17 @@ public class HtmlBrowser {
                          }
                          });
                      
+                     }
+                     if(result.equals("bad_wait"))
+                     {
+                         lastStore = count;
+                         btchsz=batchSize+count;
+                         Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.appendText("Wait for Store Operation Timeout....\nPlease track & trace selected items in last batch\n to ascertain registration status");
+                         }
+                         });
                      }
                      if(result.equals(""))
                      {
@@ -323,27 +469,46 @@ public class HtmlBrowser {
                 
                 }
 		JOptionPane.showMessageDialog(null, "Processing Complete");
+                 writer.close();
 		
         
         }
+        catch(IndexOutOfBoundsException ex)
+        {
+        JOptionPane.showMessageDialog(null, "Cannot select from empty options");
+        Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.clear();
+                         }
+                         });
+        }
         catch(Exception ex)
         {
-        
+        JOptionPane.showMessageDialog(null, ex.getMessage());
+        Platform.runLater(new Runnable(){
+                         public void run()
+                         {
+                         tarea.clear();
+                         }
+                         });
         }
         }
         public void  startTask()
         {
+        
         Runnable task = new Runnable(){
         @Override
         public void run()
         {
         processHandler();
-        //unsuccessful();
+        unsuccessful();
         }
         };
         Thread worker = new Thread(task);
         worker.setDaemon(true);
         worker.start();
+        
         
         }
         protected String storeitems()
@@ -351,13 +516,21 @@ public class HtmlBrowser {
               String pagehtml = "";
             try
 		{
-                //System.out.println(page.asText());
+               
                  
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnStore");
                 if(addbtn!=null)
                 {
 		page = addbtn.click();
-                Thread.sleep(5000);
+                
+                //Thread.sleep(10000);
+                int numtries = 0;
+                 while(page.getWebClient().waitForBackgroundJavaScript(60000) > 0)
+                 {
+                  
+                  if(numtries == 5) return "bad_wait";
+                  numtries++;
+                 }
                 pagehtml = page.asText();
                 }
                
