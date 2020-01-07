@@ -1,2 +1,6 @@
 html*/
 poi*/
+build/
+test/
+nbproject/
+dist/
