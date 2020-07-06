@@ -1,6 +1,6 @@
 html*/
 poi*/
-build/
-test/
-nbproject/
-dist/
+build*/
+test*/
+nbproject*/
+dist*/

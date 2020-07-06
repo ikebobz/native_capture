@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 
@@ -38,6 +39,7 @@ public class HtmlBrowser {
         String username;
         String passw;
         String condition;
+        String capdate = "";
         int nondeliver_r;
         int nondeliver_m;
         javafx.scene.control.TextArea tarea;
@@ -49,6 +51,12 @@ public class HtmlBrowser {
         BufferedWriter writer;
         int count;
         int progress;
+        int browserSelect;
+        Thread worker;
+        boolean terminate = false;
+        WebClient client;
+        
+        
 	
 
 	public static void main(String[] args) 
@@ -65,6 +73,11 @@ public class HtmlBrowser {
                  
                 HtmlTextInput identifier = (HtmlTextInput)page.getElementById("MailitemIdentifier");
 		identifier.setValueAttribute(entry);
+                if(count>0)
+                {
+                HtmlInput txtCapDate = page.getElementByName("EventLocalDateTime");
+                txtCapDate.setValueAttribute(capdate);
+                }
                 //identifier.getValueAttribute();
 		HtmlButton addbtn = (HtmlButton)page.getElementById("btnAddOrStore");
 		page = addbtn.click();
@@ -93,7 +106,7 @@ public class HtmlBrowser {
                 
 		{
 		 writer = new BufferedWriter(new FileWriter("process.log"));
-                 if(!isConnected())
+                 /*if(!isConnected())
                  {
                  Platform.runLater(new Runnable(){
                  public void run()
@@ -103,17 +116,35 @@ public class HtmlBrowser {
                  });
                  reachable = false;
                  return;
-                 }
+                 }*/
                  Platform.runLater(new Runnable(){
                  public void run()
                  {
                  tarea.appendText("Establishing connection to IPS Servers......\n");
+                 
                  }
                  });
-                WebClient client = new WebClient();
-                client.getOptions().setTimeout(300000);
+                 if(client == null)
+                 {
+                client = getWebClientFromBrowser(browserSelect);
+                Platform.runLater(new Runnable(){
+                 public void run()
+                 {
+                 if(browserSelect == 0)
+                 tarea.appendText("Emulating default browser..\n");
+                 if(browserSelect == 1)
+                 tarea.appendText("Emulating Chrome browser..\n");
+                 if(browserSelect == 2)
+                 tarea.appendText("Emulating Mozilla browser..\n");
+                 }
+                 });
+                
+                //client.getOptions().setTimeout(120000);
                 client.getOptions().setJavaScriptEnabled(true);
-		page = client.getPage("http://41.204.247.247/IPSWeb/");
+                client.getOptions().setRedirectEnabled(true);
+                 }
+                if(page == null){
+		page = client.getPage("http://41.204.247.247/IPSWeb");
 		HtmlInput user = page.getElementByName("Username");
 		user.setValueAttribute(username);
 		HtmlInput pass = page.getElementByName("Password");
@@ -143,6 +174,7 @@ public class HtmlBrowser {
                  tarea.appendText("Logged In\n");
                  }
                  });
+                }
 		HtmlAnchor tracktrace = page.getAnchorByText("Letters");
 		page = tracktrace.click();
 		HtmlAnchor loc_office_rec = page.getAnchorByText("Receive letters at local delivery office (EMG)");
@@ -163,7 +195,7 @@ public class HtmlBrowser {
 		page =  conditionPin.click();
 		HtmlSelect condition  =  page.getElementByName("Condition");
                 condition.setSelectedIndex(1);
-                
+                reselectDate();
                 //Thread.sleep(2000);
                 count = 0;progress = 0;
 		while(count < recCount)
@@ -277,7 +309,12 @@ public class HtmlBrowser {
                 
                 
                 }
+                
                 }
+                catch(IllegalStateException e)
+                 {
+                        
+                 }
 		catch(Exception ex)
 		{
 		reachable = false;
@@ -335,6 +372,7 @@ public class HtmlBrowser {
         HtmlOption option = nondelmeasact.getOptionByValue("F");   
         nondelmeasact.setSelectedAttribute(option, true);
         }
+        reselectDate();
         count = 0;progress = 0;
 		while(count < recCount)
                 {
@@ -505,7 +543,7 @@ public class HtmlBrowser {
         unsuccessful();
         }
         };
-        Thread worker = new Thread(task);
+        worker = new Thread(task);
         worker.setDaemon(true);
         worker.start();
         
@@ -559,6 +597,35 @@ public class HtmlBrowser {
       }
     return connected;
     }
+        protected WebClient getWebClientFromBrowser(int value)
+        {
+        switch(value)
+        {
+            case 0: return new WebClient(BrowserVersion.INTERNET_EXPLORER);
+            case 1: return new WebClient(BrowserVersion.CHROME);
+            case 2: return new WebClient(BrowserVersion.FIREFOX_60);
+            default: return new WebClient();
+        }
+        
+        }
+        protected void reselectDate()
+        {
+         try
+            {
+        if(!capdate.equals(""))
+         {
+          HtmlCheckBoxInput useCurDate = (HtmlCheckBoxInput)page.getElementByName("UseCurrentDateTime");
+          if(useCurDate.isChecked())
+          page =  useCurDate.click();
+         HtmlInput txtCapDate = page.getElementByName("EventLocalDateTime");
+         txtCapDate.setValueAttribute(capdate);
+         }
+        }
+            catch(Exception ex)
+         {
+            
+         }
+        }
 
 
 }

@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import javafx.event.EventHandler;
+import javax.swing.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -46,11 +51,15 @@ public class FXMLDocumentController implements Initializable {
     @FXML TextField txt_trackno;
     @FXML RadioButton f1;
     @FXML RadioButton f2;
+    @FXML ChoiceBox browserID;
+    @FXML DatePicker datepick;
     boolean secondphase = false;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy",Locale.US);
     
     private String tracknos;
     List<String> regnos = new ArrayList<String>();
     List<String> buffer = new ArrayList<String>();
+    HtmlBrowser browser = new HtmlBrowser();
     
     @FXML
     private void filePickerClicked(ActionEvent event) {
@@ -68,6 +77,16 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+       //datepick.setValue(LocalDate.now());
+       /*datepick.setOnAction(new EventHandler<ActionEvent>() 
+        {
+            @Override
+             public void handle(ActionEvent event) 
+             {
+                 txt_trackno.setText(datepick.getValue().format(formatter)+" 01:00"); 
+                 
+             }
+        });*/
     }  
     @FXML
     private void onEnter(ActionEvent event)
@@ -81,9 +100,33 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     public void resetClicked(ActionEvent event)
     {
+    try
+    {
     appout.clear();
     txt_recCount.clear();
     if(regnos.size()>0)regnos.clear();
+    filename.setText("");
+    
+    }
+    catch(Exception e)
+    {
+    
+    }
+   
+    }
+    @FXML
+    public void abortClicked(ActionEvent event)
+    {
+    try
+    {
+    browser.client.close();
+    }
+    catch(Exception e)
+    {
+    
+    }
+    browser = null;
+    JOptionPane.showMessageDialog(null, "Background Processes terminated");
     }
     @FXML 
     public void reloadClicked(ActionEvent event)
@@ -141,17 +184,21 @@ public class FXMLDocumentController implements Initializable {
        }*/
      int count = Integer.parseInt(txt_recCount.getText());
      //new HtmlBrowser().processHandler(tracknos, Integer.parseInt(txt_btchsize.getText()),count);
-     HtmlBrowser browser = new HtmlBrowser();
+     if(browser==null)
+     browser = new HtmlBrowser();
      browser.file=tracknos;
      if(f2.isSelected()) browser.udaonly = true;
      browser.batchSize=Integer.parseInt(txt_btchsize.getText());
      browser.recCount = count;
      browser.tarea = appout;
      browser.appStatus = filename;
+     if(datepick.getValue()!=null)
+     browser.capdate = datepick.getValue().format(formatter)+" 01:00";
      browser.username = user.getText();
      browser.passw = pass.getText();
      browser.retrialCycle = Integer.parseInt(txt_retPeriod.getText());
      browser.condition = condition.getValue().toString();
+     browser.browserSelect = browserID.getSelectionModel().getSelectedIndex();
      browser.nondeliver_m = ndelm.getSelectionModel().getSelectedIndex();
      browser.nondeliver_r = ndelr.getSelectionModel().getSelectedIndex();
      if(f1.isSelected()) browser.useFile = true;

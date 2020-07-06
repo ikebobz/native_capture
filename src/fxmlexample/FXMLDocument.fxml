@@ -16,13 +16,29 @@
         <Insets top = "25" right = "25" bottom = "10" left = "25" />
     </padding>
      <Label text = "Set Batch Size" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "0"/>
+GridPane.columnIndex = "0" GridPane.rowIndex = "0"/><HBox GridPane.columnIndex = "1" GridPane.rowIndex = "0" spacing = "50">
       <TextField fx:id = "txt_btchsize" 
-GridPane.columnIndex = "1" GridPane.rowIndex = "0" maxWidth = "65" text = "10" />
-      <Label text = "Set Record Count" 
-GridPane.columnIndex = "0" GridPane.rowIndex = "1"/>
-      <TextField fx:id = "txt_recCount" 
-GridPane.columnIndex = "1" GridPane.rowIndex = "1" maxWidth = "65"/>
+ maxWidth = "65" text = "10" /><HBox spacing = "15">
+       <Label text = "Select Brower Version:" />
+       <ChoiceBox value="Internet Explorer" fx:id = "browserID">
+    <items>
+        <FXCollections fx:factory="observableArrayList">
+            <String fx:value="Internet Explorer" />
+            <String fx:value="Chrome" />
+            <String fx:value="Mozilla" />
+        </FXCollections>
+    </items>
+       </ChoiceBox>
+ </HBox>
+</HBox>
+<Label text = "Set Record Count" GridPane.columnIndex = "0" GridPane.rowIndex = "1" />
+<HBox GridPane.columnIndex = "1" GridPane.rowIndex = "1" spacing = "50">
+    <TextField fx:id = "txt_recCount"  maxWidth = "65"/>
+    <HBox spacing = "15">
+        <Label text = "Set Capture Date(DD/MM/YYYY)" />
+    <DatePicker fx:id = "datepick"/>
+    </HBox>
+</HBox>
       <Label text = "Retrial Interval in millisec" 
 GridPane.columnIndex = "0" GridPane.rowIndex = "2"/>
       <TextField fx:id = "txt_retPeriod"
@@ -83,14 +99,15 @@ GridPane.columnIndex = "0" GridPane.rowIndex = "13"/>
 GridPane.columnIndex = "1" GridPane.rowIndex = "13"/>
 <HBox GridPane.columnIndex = "1" GridPane.rowIndex = "14" spacing = "15">
           <Button text = "Process"  onAction = "#processClicked"/>
-         <Button text = "Reset"  onAction = "#resetClicked"/>
+         <Button text = "Clear Screen"  onAction = "#resetClicked"/>
          <Button text = "Reload Queue"  onAction = "#reloadClicked"/>
          <Button text = "Clear buffer"  onAction = "#recBufClicked"/>
+         <Button text = "Abort"  onAction = "#abortClicked"/>
 </HBox>
          <Label text = "User Credentials." 
 GridPane.columnIndex = "0" GridPane.rowIndex = "16"/>
       <TextField fx:id = "user" 
-GridPane.columnIndex = "1" GridPane.rowIndex = "16" maxWidth = "150" text = "robinson18"/>
+GridPane.columnIndex = "1" GridPane.rowIndex = "16" maxWidth = "150" />
       <PasswordField fx:id = "pass"
-GridPane.columnIndex = "1" GridPane.rowIndex = "17" maxWidth = "150" text = "Iken88"/>
+GridPane.columnIndex = "1" GridPane.rowIndex = "17" maxWidth = "150"/>
 </GridPane>
